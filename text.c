@@ -695,7 +695,7 @@ int filter_or_ignore_text (char *text_to_add, int len, int size, Uint8 channel)
 	// look for astrology messages
 	if((channel == CHAT_SERVER) && is_astrology_message (text_to_add))
 	{
-		return 0;
+		return len;
 	}
 
 	// filter any naughty words out
