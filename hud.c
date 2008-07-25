@@ -38,6 +38,7 @@
 #endif
 #include "user_menus.h"
 #include "url.h"
+#include "chat.h"
 #include "emotes.h"
 
 
@@ -2061,6 +2062,19 @@ int	click_misc_handler(window_info *win, int mx, int my, Uint32 flags)
 	{
 		unsigned char protocol_name;
 		do_click_sound();
+
+		if (flags & ELW_SHIFT)
+		{
+			char message[200];
+			actor *me = get_our_actor();
+			if (me)
+			{
+				safe_snprintf(message, sizeof message, "[%d,%d]", me->x_tile_pos, me->y_tile_pos);
+				paste_in_input_field(message);
+			}
+			return 1;
+		}
+		
 		protocol_name= LOCATE_ME;
 		if (flags & ELW_SHIFT)
 		{
