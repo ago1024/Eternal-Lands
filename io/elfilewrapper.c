@@ -624,7 +624,7 @@ static el_file_ptr gz_file_open(const char* file_name)
 	do
 	{
 		result->buffer = realloc(result->buffer, size + 0x40000);
-		read = gzread(file, result->buffer + size, 0x40000);
+		read = gzread(file, (char*)result->buffer + size, 0x40000);
 		size += read;
 	}
 	while (gzeof(file) == 0);
@@ -864,7 +864,7 @@ Sint64 el_read(el_file_ptr file, Sint64 size, void* buffer)
 	memcpy(buffer, file->current, count);
 	file->current += count;
 #else
-	memcpy(buffer, file->buffer + file->position, count);
+	memcpy(buffer, (char*)file->buffer + file->position, count);
 	file->position += count;
 #endif
 

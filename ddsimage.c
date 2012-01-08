@@ -748,7 +748,7 @@ static void* unpack_dds(el_file_ptr file, DdsHeader *header,
 	dest = malloc(size);
 #endif	/* NEW_TEXTURES */
 
-	fast_unpack(el_get_pointer(file) + sizeof(DdsHeader) + offset + 4, size / bpp,
+	fast_unpack((char*)el_get_pointer(file) + sizeof(DdsHeader) + offset + 4, size / bpp,
 		header->m_pixel_format.m_red_mask,
 		header->m_pixel_format.m_green_mask,
 		header->m_pixel_format.m_blue_mask,
@@ -769,7 +769,7 @@ static void* read_dds(el_file_ptr file, DdsHeader *header,
 
 	dst = malloc_aligned(size, 16);
 
-	memcpy(dst, el_get_pointer(file) + sizeof(DdsHeader) + offset + 4, size);
+	memcpy(dst, (char*)el_get_pointer(file) + sizeof(DdsHeader) + offset + 4, size);
 
 	return dst;
 }

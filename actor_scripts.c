@@ -694,10 +694,10 @@ struct cal_anim *get_pose(actor *a, int pose_id, int pose_type, int held) {
 	hash_entry *he,*eh;
 	emote_data *pose;
 
-	eh=hash_get(emotes,(NULL+pose_id));
+	eh=hash_get(emotes,((void*)pose_id));
 	pose = eh->item;
 
-	he=hash_get(actors_defs[a->actor_type].emote_frames, (NULL+pose->anims[pose_type][0][held]->ids[0]));
+	he=hash_get(actors_defs[a->actor_type].emote_frames, ((void*)pose->anims[pose_type][0][held]->ids[0]));
 	if (he) return (struct cal_anim*) he->item;
 	else return NULL;
 }
@@ -710,7 +710,7 @@ struct cal_anim *get_pose_frame(int actor_type, actor *a, int pose_type, int hel
 	//find the pose. Pose is the first anim of the first frame
 	if (a->poses[pose_type]) {
 		//printf("getting pose for %s\n",a->actor_name);
-		he=hash_get(actors_defs[actor_type].emote_frames, (NULL+a->poses[pose_type]->anims[a_type][0][held]->ids[0]));
+		he=hash_get(actors_defs[actor_type].emote_frames, ((void*)a->poses[pose_type]->anims[a_type][0][held]->ids[0]));
 		if (he) return (struct cal_anim*) he->item;
 	}
 	//no pose or no emote..set defaults
@@ -2260,7 +2260,7 @@ void add_emote_to_actor(int actor_id, int emote_id){
 	//printf("SERVER MSG\nwe have actor %i %p\n",actor_id,act);
 	if(emote_id!=0) {
 		//dirty, but avoids warnings :P
-		he=hash_get(emotes,(void*)(NULL+emote_id));
+		he=hash_get(emotes,(void*)emote_id);
 		if(!he) {
 			LOG_ERROR("%s (Emote) %i- NULL emote passed", cant_add_command,emote_id);
 			UNLOCK_ACTORS_LISTS();
@@ -2600,7 +2600,7 @@ emote_data *new_emote(int id){
 	emote=(emote_data*)calloc(1,sizeof(emote_data));
 	init_emote(emote);
 	emote->id=id;
-	hash_add(emotes,(void*)(NULL+id),(void*)emote);
+	hash_add(emotes,(void*)id,(void*)emote);
 	return emote;
 }
 
@@ -3934,7 +3934,7 @@ int parse_actor_frames (actor_types *act, const xmlNode *cfg, const xmlNode *def
 #endif	//NEW_SOUND
 					, get_int_property(item, "duration")
 					);
-					hash_add(act->emote_frames, (void*)(NULL+j), (void*)anim);					
+					hash_add(act->emote_frames, (void*)j, (void*)anim);					
 				}
 				continue;
 			}
