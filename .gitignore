@@ -1,0 +1,8 @@
+*.o
+*.exe
+*.dll
+*.a
+*~
+.depend
+*.swp
+*.zip
