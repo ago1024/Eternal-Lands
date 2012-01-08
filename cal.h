@@ -11,10 +11,10 @@ extern "C" {
 
 enum CalBoolean CalMixer_ExecuteAction_Stop(struct CalMixer *self, int id, float delayIn, float delayOut);
 struct CalMesh *CalModel_GetAttachedMesh(struct CalModel *self,int i);
-void CalCoreSkeleton_Scale(struct CalCoreSkeleton *self,float factor);
-void CalMixer_RemoveAction(struct CalMixer *self,int id);
-void CalCoreAnimation_Scale(struct CalCoreAnimation *self, float factor);
-void CalCoreMesh_Scale(struct CalCoreMesh *self,float factor);
+//void CalCoreSkeleton_Scale(struct CalCoreSkeleton *self,float factor);
+//void CalMixer_RemoveAction(struct CalMixer *self,int id);
+//void CalCoreAnimation_Scale(struct CalCoreAnimation *self, float factor);
+//void CalCoreMesh_Scale(struct CalCoreMesh *self,float factor);
 #ifdef NEW_SOUND
 void cal_set_anim_sound(struct cal_anim *my_cal_anim, const char *sound, const char *sound_scale);
 #endif // NEW_SOUND

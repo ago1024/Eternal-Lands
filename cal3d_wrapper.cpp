@@ -2,6 +2,7 @@
 #include <cal3d/coretrack.h>
 #include <cal3d/corekeyframe.h>
 
+#define CAL3D_WRAPPER_API
 //#include <cal3d/cal3d_wrapper.h>
 #include "cal3d_wrapper.h"
 

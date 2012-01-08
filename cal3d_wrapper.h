@@ -31,10 +31,12 @@
 #pragma warning(disable : 4786)
 #pragma warning(disable : 4099)
 
+#ifndef CAL3D_WRAPPER_API
 #ifdef CAL3D_WRAPPER_EXPORTS
 #define CAL3D_WRAPPER_API __declspec(dllexport)
 #else
 #define CAL3D_WRAPPER_API __declspec(dllimport)
+#endif
 #endif
 
 #endif
@@ -459,7 +461,7 @@ CAL3D_WRAPPER_API enum CalBoolean  CalCoreSubmesh_EnableTangents(struct CalCoreS
   CAL3D_WRAPPER_API void CalModel_SetMaterialSet(struct CalModel *self, int setId);
   CAL3D_WRAPPER_API void CalModel_SetUserData(struct CalModel *self, CalUserData userData);
   CAL3D_WRAPPER_API void CalModel_Update(struct CalModel *self, float deltaTime);
-  CAL3D_WRAPPER_API struct CalMesh *CalModel_GetAttachedMesh(struct CalModel *self,int i);
+//  CAL3D_WRAPPER_API struct CalMesh *CalModel_GetAttachedMesh(struct CalModel *self,int i);
 
 //****************************************************************************//
 // CalPhysique wrapper functions declaration                                  //
