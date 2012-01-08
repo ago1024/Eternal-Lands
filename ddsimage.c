@@ -813,7 +813,7 @@ static void get_dds_sizes_and_offsets(const DdsHeader *header,
 }
 
 Uint32 load_dds(el_file_ptr file, const Uint32 compression,
-	const Uint32 unpack, const Uint32 strip_mipmaps, Uint32 base_level,
+	const Uint32 unpack, const Uint32 strip_mipmaps, const Uint32 base_level,
 	image_t* image)
 {
 	DdsHeader header;

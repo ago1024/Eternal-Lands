@@ -4,6 +4,7 @@
 #ifdef	WINDOWS
  #define strdup	_strdup
  #include <direct.h>
+ #include <winsock.h>
 #else   //WINDOWS
  #include <sys/types.h>
  #include <sys/stat.h>

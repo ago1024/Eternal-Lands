@@ -463,7 +463,7 @@ int filter_or_ignore_text (char *text_to_add, int len, int size, Uint8 channel)
 		const char * const month_names[] = { "Aluwia", "Seedar", "Akbar", "Zartia", "Elandra", "Viasia", "Fruitfall", "Mortia", "Carnelar", "Nimlos", "Chimar", "Vespia" };
 		const char * const day_names[] = { "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "13th", "14th", "15th", "16th", "17th", "18th", "19th", "20th", "21st", "22nd", "23rd", "24th", "25th", "26th", "27th", "28th", "29th", "30th" };
 		char new_str[100];
-		const char *ptr=text_to_add;
+		const unsigned char *ptr=text_to_add;
 		short unsigned int day=1, month=1, year=0;
 		int offset = 0;
 

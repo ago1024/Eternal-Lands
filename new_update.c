@@ -1,5 +1,8 @@
 #include <zlib.h>
 #include <time.h>
+#ifdef WINDOWS
+#include <winsock.h>
+#endif
 #include <SDL_net.h>
 #include <SDL_thread.h>
 #include <string.h>

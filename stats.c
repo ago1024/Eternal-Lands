@@ -515,32 +515,32 @@ void get_partial_stat(Uint8 name,Sint32 value)
 
 }
 
-Sint16 get_base_might() { return (your_info.phy.base+your_info.coo.base)/2;}
-Sint16 get_cur_might() { return (your_info.phy.cur+your_info.coo.cur)/2;}
+Sint16 get_base_might(void) { return (your_info.phy.base+your_info.coo.base)/2;}
+Sint16 get_cur_might(void) { return (your_info.phy.cur+your_info.coo.cur)/2;}
 
-Sint16 get_base_matter() { return (your_info.phy.base+your_info.wil.base)/2;}
-Sint16 get_cur_matter() { return (your_info.phy.cur+your_info.wil.cur)/2;}
+Sint16 get_base_matter(void) { return (your_info.phy.base+your_info.wil.base)/2;}
+Sint16 get_cur_matter(void) { return (your_info.phy.cur+your_info.wil.cur)/2;}
 
-Sint16 get_base_tough() { return (your_info.phy.base+your_info.vit.base)/2;}
-Sint16 get_cur_tough() { return (your_info.phy.cur+your_info.vit.cur)/2;}
+Sint16 get_base_tough(void) { return (your_info.phy.base+your_info.vit.base)/2;}
+Sint16 get_cur_tough(void) { return (your_info.phy.cur+your_info.vit.cur)/2;}
 
-Sint16 get_base_charm() { return (your_info.ins.base+your_info.vit.base)/2;}
-Sint16 get_cur_charm() { return (your_info.ins.cur+your_info.vit.cur)/2;}
+Sint16 get_base_charm(void) { return (your_info.ins.base+your_info.vit.base)/2;}
+Sint16 get_cur_charm(void) { return (your_info.ins.cur+your_info.vit.cur)/2;}
 
-Sint16 get_base_react() { return (your_info.ins.base+your_info.coo.base)/2;}
-Sint16 get_cur_react() { return (your_info.ins.cur+your_info.coo.cur)/2;}
+Sint16 get_base_react(void) { return (your_info.ins.base+your_info.coo.base)/2;}
+Sint16 get_cur_react(void) { return (your_info.ins.cur+your_info.coo.cur)/2;}
 
-Sint16 get_base_perc() { return (your_info.ins.base+your_info.rea.base)/2;}
-Sint16 get_cur_perc() { return (your_info.ins.cur+your_info.rea.cur)/2;}
+Sint16 get_base_perc(void) { return (your_info.ins.base+your_info.rea.base)/2;}
+Sint16 get_cur_perc(void) { return (your_info.ins.cur+your_info.rea.cur)/2;}
 
-Sint16 get_base_rat() { return (your_info.wil.base+your_info.rea.base)/2;}
-Sint16 get_cur_rat() { return (your_info.wil.cur+your_info.rea.cur)/2;}
+Sint16 get_base_rat(void) { return (your_info.wil.base+your_info.rea.base)/2;}
+Sint16 get_cur_rat(void) { return (your_info.wil.cur+your_info.rea.cur)/2;}
 
-Sint16 get_base_dext() { return (your_info.coo.base+your_info.rea.base)/2;}
-Sint16 get_cur_dext() { return (your_info.coo.cur+your_info.rea.cur)/2;}
+Sint16 get_base_dext(void) { return (your_info.coo.base+your_info.rea.base)/2;}
+Sint16 get_cur_dext(void) { return (your_info.coo.cur+your_info.rea.cur)/2;}
 
-Sint16 get_base_eth() { return (your_info.wil.base+your_info.vit.base)/2;}
-Sint16 get_cur_eth() { return (your_info.wil.cur+your_info.vit.cur)/2;}
+Sint16 get_base_eth(void) { return (your_info.wil.base+your_info.vit.base)/2;}
+Sint16 get_cur_eth(void) { return (your_info.wil.cur+your_info.vit.cur)/2;}
 
 void init_attribf()
 {

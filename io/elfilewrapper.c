@@ -1040,7 +1040,7 @@ int el_file_exists_anywhere(const char* file_name)
 	return result;
 }
 
-const char* el_file_name(el_file_ptr file)
+const char* el_file_name(const el_file_ptr file)
 {
 	return file ? file->file_name : NULL;
 }

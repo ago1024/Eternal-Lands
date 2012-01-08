@@ -3,6 +3,7 @@
 #include <string.h>
 #include "../xz/7zCrc.h"
 #include "../platform.h"
+#include "../asc.h"
 
 Uint32 convert_string_to_md5_digest(const char* str, MD5_DIGEST digest)
 {
