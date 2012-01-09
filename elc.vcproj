@@ -123,7 +123,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)\SDL\include&quot;;&quot;$(SolutionDir)\cal3d\src&quot;;&quot;$(SolutionDir)\libs\include&quot;;&quot;$(SolutionDir)\libs\include\AL&quot;;&quot;$(SolutionDir)\libs\include\SDL&quot;"
+				AdditionalIncludeDirectories="winhelper;&quot;$(SolutionDir)\SDL\include&quot;;&quot;$(SolutionDir)\cal3d\src&quot;;&quot;$(SolutionDir)\libs\include&quot;;&quot;$(SolutionDir)\libs\include\AL&quot;;&quot;$(SolutionDir)\libs\include\SDL&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;WINDOWS;ELC;CLUSTER_INSIDES;CUSTOM_LOOK;CUSTOM_UPDATE;FUZZY_PATHS;NEW_SOUND;PNG_SCREENSHOT;TEXT_ALIASES;USE_INLINE;BANDWIDTH_SAVINGS;ANIMATION_SCALING;ENCYCL_NAVIGATION;FSAA;NEW_NEW_CHAR_WINDOW;NEW_TEXTURES;FASTER_MAP_LOAD;_7ZIP_ST;$(NOINHERIT)"
 				ExceptionHandling="1"
 				RuntimeLibrary="2"
@@ -922,15 +922,15 @@
 				>
 			</File>
 			<File
-				RelativePath="books\types.h"
-				>
-			</File>
-			<File
 				RelativePath=".\xz\Types.h"
 				>
 			</File>
 			<File
 				RelativePath="eye_candy\types.h"
+				>
+			</File>
+			<File
+				RelativePath="books\types.h"
 				>
 			</File>
 			<File
@@ -1623,6 +1623,14 @@
 							CompileAs="2"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="actor_init.cpp"
@@ -1650,6 +1658,14 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2168,6 +2184,14 @@
 							CompileAs="2"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="exceptions\extendedexception.cpp"
@@ -2243,12 +2267,28 @@
 							CompileAs="2"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\item_lists.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2282,6 +2322,14 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -2356,6 +2404,14 @@
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
