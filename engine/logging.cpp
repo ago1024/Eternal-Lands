@@ -16,12 +16,25 @@
 #include <map>
 #include <cstdio>
 #include <fcntl.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#else
+#include <io.h>
+#endif
 #include <dirent.h>
 #include <sys/stat.h>
 #include <SDL/SDL_mutex.h>
 #include <SDL/SDL_thread.h>
 #include "../elc_private.h"
+
+#ifdef _MSC_VER
+typedef unsigned int ssize_t;
+
+int ftruncate(int __fd, unsigned int __length)
+{
+    return _chsize (__fd, __length); /* returns -1 for error */
+}
+#endif
 
 namespace eternal_lands
 {

@@ -1491,7 +1491,11 @@ static int command_show_spell(char *text, int len)
 /* display or test the md5sum of the current map or the specified file */
 int command_ckdata(char *text, int len)
 {
+#ifdef _MSC_VER
+#define DIGEST_LEN 16
+#else
 	const int DIGEST_LEN = 16;
+#endif
 	Uint8 digest[DIGEST_LEN];
 	char digest_str[DIGEST_LEN*2+1];
 	char expected_digest_str[DIGEST_LEN*2+1];

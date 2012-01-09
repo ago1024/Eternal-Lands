@@ -313,7 +313,11 @@ namespace UserMenus
 
 		// issue the command
 		size_t command_len = command_text.str().size() + 1;
+#ifdef _MSC_VER
+		char *temp = (char*)alloca(command_len);
+#else
 		char temp[command_len];
+#endif
 		safe_strncpy(temp, command_text.str().c_str(), command_len);
 		parse_input(temp, strlen(temp));				
 	}

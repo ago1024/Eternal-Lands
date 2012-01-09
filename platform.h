@@ -43,10 +43,13 @@
   // else we'll eventually break C++ headers that use it
   #include <stdio.h>
 
-  #define stat _stat
   #define snprintf safe_snprintf
   #define strncasecmp _strnicmp
   #define strcasecmp _stricmp
+
+  #include <direct.h>
+  #define mkdir _mkdir
+  #define chdir _chdir
 
   #define __inline__ __inline
 

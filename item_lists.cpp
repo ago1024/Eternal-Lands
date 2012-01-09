@@ -751,7 +751,7 @@ namespace ItemLists
 	{
 		if (!last_mod_time)
 			return;
-		if (force || (last_mod_time && abs(last_mod_time - SDL_GetTicks()) > 5000))
+		if (force || (last_mod_time && abs((Sint32)(last_mod_time - SDL_GetTicks())) > 5000))
 			save();
 	}
 

@@ -7,6 +7,10 @@
 #include "gl_init.h"
 #endif
 #include <math.h>
+#ifdef _MSC_VER
+#include <float.h>
+#define isnan _isnan
+#endif
 
 #define HIGHLIGHT_MARKER_LIFESPAN	(500)
 #define NUMBER_OF_HIGHLIGHT_MARKERS	(10)

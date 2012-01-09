@@ -20,7 +20,7 @@ extern "C" {
  * \brief 	Image manipulation functions
  */
 
-static inline Uint32 popcount(const Uint32 x)
+static __inline Uint32 popcount(const Uint32 x)
 {
 	Uint32 r;
 
