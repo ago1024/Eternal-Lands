@@ -208,7 +208,7 @@ void move_to (short int x, short int y, int try_pathfinder)
 		/* check distance */
 		if (me && (abs(me->x_tile_pos-x)+abs(me->y_tile_pos-y)) > 2)
 			/* if path finder fails, try standard move */
-			if (pf_find_path(x,y))
+			if (pf_find_closest_path(x,y))
 				return;
 	}
 

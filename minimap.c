@@ -607,7 +607,7 @@ static int minimap_walkto(int mx, int my)
 		+ minimap_tiles_distance * 2 * fmy/float_minimap_size;
 
 	/* Do path finding */
-	if (pf_find_path(fmx, fmy))
+	if (pf_find_closest_path(fmx, fmy))
 	{
 		return 1;
 	}

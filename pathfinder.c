@@ -382,31 +382,74 @@ int pf_get_mouse_position_extended(int mouse_x, int mouse_y, int * px, int * py,
 	return 1;
 }
 
-void pf_move_to_mouse_position()
+/**
+ * Attempts to find walkable tiles around the destination. It will try closer tiles first.
+ * Tiles are checked using this pattern and order:
+ *
+ * 55556
+ * 81126 
+ * 84o26  
+ * 84336 
+ * 87777
+ */
+int pf_find_closest_path(int x, int y)
 {
-	int x, y, clicked_x, clicked_y;
-	int tries;
+	int i, k;
+	int tries = 0;
+    int ret;
 
-	if (!pf_get_mouse_position(mouse_x, mouse_y, &clicked_x, &clicked_y)) return;
-	x = clicked_x; y = clicked_y;
+	ret = pf_find_path(x, y);
+    if (ret)
+		return ret;
 
-	if (pf_find_path(x, y))
-		return;
-
-	for (x= clicked_x-3, tries= 0; x <= clicked_x+3 && tries < 4 ; x++)
+	for (i = 1; i < 3 && tries < 4 ; i++)
 	{
-		for (y= clicked_y-3; y <= clicked_y+3 && tries < 4; y++)
+		for (k = 0; k < 4*2*i && tries < 4; k++)
 		{
-			if (x == clicked_x && y == clicked_y)
-				continue;
+			int block = k / (2*i);
+			int step = k % (2*i);
+			int dx, dy;
 
-			pf_dst_tile = pf_get_tile(x, y);
+			switch (block)
+			{
+				default:
+				case 0:
+					dx = -i + step;
+					dy = -i;
+					break;
+				case 1:
+					dx = i;
+					dy = -i + step;
+					break;
+				case 2:
+					dx = i - step;
+					dy = i;
+					break;
+				case 3:
+					dx = -i;
+					dy = i - step;
+					break;
+			}
+
+			pf_dst_tile = pf_get_tile(x + dx, y + dy);
 			if (pf_dst_tile && pf_dst_tile->z > 0)
 			{
-				if (pf_find_path(x, y))
-					return;
+				ret = pf_find_path(x + dx, y + dy);
+				if (ret)
+					return ret;
 				tries++;
 			}
 		}
 	}
+	return 0;
+}
+
+void pf_move_to_mouse_position()
+{
+	int x, y, clicked_x, clicked_y;
+
+	if (!pf_get_mouse_position(mouse_x, mouse_y, &clicked_x, &clicked_y)) return;
+	x = clicked_x; y = clicked_y;
+
+	pf_find_closest_path(x, y);
 }

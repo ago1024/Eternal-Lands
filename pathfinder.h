@@ -77,6 +77,20 @@ int pf_find_path(int x, int y);
 
 /*!
  * \ingroup move_actors
+ * \brief Finds a path close to the given position
+ *
+ *      Finds a path from the current position to somewhere near the given target position (x,y).
+ *      If there is no path to target it will try locations up to 3 tiles around the target.
+ *
+ * \param x     x coordinate of the target position
+ * \param y     y coordinate of the target position
+ * \retval int
+ * \callgraph
+ */
+int pf_find_closest_path(int x, int y);
+
+/*!
+ * \ingroup move_actors
  * \brief Clears the current path and frees up the memory used
  *
  *      Clears the current path and frees up the memory used
