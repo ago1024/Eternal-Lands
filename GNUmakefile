@@ -24,7 +24,7 @@ EL_CVS_BASE:=el-cvs-$(shell date +%Y-%m-%d-%H%M)
 	git pull
 endif
 
-OPTIONS_VLC = WINDOWS;ELC$(foreach FEATURE,$(FEATURES),;$(FEATURE))
+OPTIONS_VC = WINDOWS;ELC$(foreach FEATURE,$(FEATURES),;$(FEATURE))
 
-vlc_options: make.conf
-	echo "$(OPTIONS_VLC)" >vlc_options
+vc_options: make.conf
+	echo "$(OPTIONS_VC)" >$@
