@@ -922,15 +922,15 @@
 				>
 			</File>
 			<File
-				RelativePath="eye_candy\types.h"
-				>
-			</File>
-			<File
 				RelativePath="books\types.h"
 				>
 			</File>
 			<File
 				RelativePath=".\xz\Types.h"
+				>
+			</File>
+			<File
+				RelativePath="eye_candy\types.h"
 				>
 			</File>
 			<File
@@ -2346,6 +2346,26 @@
 						<Tool
 							Name="VCCLCompilerTool"
 							ExceptionHandling="1"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							CompileAs="2"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\minidump.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
 							CompileAs="2"
 						/>
 					</FileConfiguration>

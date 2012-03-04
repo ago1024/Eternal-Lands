@@ -3,6 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include "platform.h"
+#ifdef _MSC_VER
+ #include "minidump.h"
+#endif
 
 #ifdef	__GNUC__
  #include <unistd.h>
@@ -419,6 +422,9 @@ int Main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
+#if defined(_MSC_VER) && defined(NDEBUG)
+	minidump_setcrashhandler();
+#endif
 #ifdef MEMORY_DEBUG
 	elm_init();
 #endif //MEMORY_DEBUG
