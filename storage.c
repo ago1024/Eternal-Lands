@@ -18,6 +18,7 @@
 #include "textures.h"
 #include "translate.h"
 #include "widgets.h"
+#include "paste.h"
 #ifdef OPENGL_TRACE
 #include "gl_init.h"
 #endif
@@ -53,6 +54,8 @@ static int print_quanities[STORAGE_ITEMS_SIZE];
 static int number_to_print = 0;
 static int next_item_to_print = 0;
 static int printing_category = -1;
+static int print_to_clipboard = 0;
+static char* clipboard_buffer = NULL;
 
 
 //	Look though the category for the selected item, pick it up if found.
@@ -157,13 +160,35 @@ void get_storage_text (const Uint8 *in_data, int len)
 	if ((len > 0) && (printing_category > -1) && (next_item_to_print < number_to_print))
 	{
 		char the_text[MAX_DESCR_LEN+20];
-		if (!next_item_to_print)
-		{
-			safe_snprintf(the_text, sizeof(the_text), "%s:", &storage_categories[printing_category].name[1] );
-			LOG_TO_CONSOLE(c_green2, the_text);
+		if (print_to_clipboard) {
+			if (!next_item_to_print && clipboard_buffer) {
+			    free(clipboard_buffer);
+			    clipboard_buffer = NULL;
+			}
+			if (!clipboard_buffer)
+			{
+			    clipboard_buffer = malloc((sizeof(the_text)) * number_to_print);
+			    clipboard_buffer[0] = 0;
+			}
+			safe_snprintf(the_text, sizeof(the_text), "%d\t%s\n", print_quanities[next_item_to_print++], &storage_text[1] );
+			strncat(clipboard_buffer, the_text, sizeof(the_text));
+
+			if (next_item_to_print == number_to_print) 
+			{
+				copy_to_clipboard(clipboard_buffer);
+				free(clipboard_buffer);
+				clipboard_buffer = NULL;
+				print_to_clipboard = 0;
+			}
+		} else {
+			if (!next_item_to_print)
+			{
+				safe_snprintf(the_text, sizeof(the_text), "%s:", &storage_categories[printing_category].name[1] );
+				LOG_TO_CONSOLE(c_green2, the_text);
+			}
+			safe_snprintf(the_text, sizeof(the_text), "%d %s", print_quanities[next_item_to_print++], &storage_text[1] );
+			LOG_TO_CONSOLE(c_grey1, the_text);
 		}
-		safe_snprintf(the_text, sizeof(the_text), "%d %s", print_quanities[next_item_to_print++], &storage_text[1] );
-		LOG_TO_CONSOLE(c_grey1, the_text);
 		storage_text[0] = '\0';
 	}
 }
@@ -606,6 +631,13 @@ void print_items(void)
 	}
 }
 
+void print_items_to_clipboard(void)
+{
+	print_to_clipboard = 1;
+	print_items();
+}
+
+
 static int context_storage_handler(window_info *win, int widget_id, int mx, int my, int option)
 {
 	if (option<ELW_CM_MENU_LEN)
@@ -613,7 +645,8 @@ static int context_storage_handler(window_info *win, int widget_id, int mx, int 
 	switch (option)
 	{
 		case ELW_CM_MENU_LEN+1: print_items(); break;
-		case ELW_CM_MENU_LEN+2: safe_strncpy(storage_text, reopen_storage_str, MAX_DESCR_LEN) ; break;
+		case ELW_CM_MENU_LEN+2: print_items_to_clipboard(); break;
+		case ELW_CM_MENU_LEN+3: safe_strncpy(storage_text, reopen_storage_str, MAX_DESCR_LEN) ; break;
 	}
 	return 1;
 }
@@ -649,9 +682,9 @@ void display_storage_menu()
 		
 		cm_add(windows_list.window[storage_win].cm_id, cm_storage_menu_str, context_storage_handler);
 		cm_add(windows_list.window[storage_win].cm_id, cm_dialog_options_str, context_storage_handler);
-		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+2, &sort_storage_categories, NULL);
-		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+3, &autoclose_storage_dialogue, NULL);
-		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+4, &auto_select_storage_option, NULL);
+		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+3, &sort_storage_categories, NULL);
+		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+4, &autoclose_storage_dialogue, NULL);
+		cm_bool_line(windows_list.window[storage_win].cm_id, ELW_CM_MENU_LEN+5, &auto_select_storage_option, NULL);
 	} else {
 		no_storage=0;
 		
