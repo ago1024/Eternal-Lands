@@ -2,6 +2,7 @@
 #include <dbghelp.h>
 #include <tchar.h>
 #include "minidump.h"
+#include "interface.h"
 
 #define MINIDUMP_FILE _T("elc.dmp")
 
@@ -120,6 +121,9 @@ minidump_dumpminidump(HANDLE hFile, EXCEPTION_POINTERS * pExPtrs)
 	eInfo.ThreadId = GetCurrentThreadId();
 	eInfo.ExceptionPointers = pExPtrs;
 	eInfo.ClientPointers = FALSE;
+
+	// Overwrite the password. Better not expose it
+	ZeroMemory(password_str, sizeof(password_str));
 
 	// This structure contains a pointer to an optional callback function
 	// that can be used by the MiniDumpWriteDump function.
