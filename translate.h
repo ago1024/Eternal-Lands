@@ -274,6 +274,7 @@ extern char
 		cmd_msg[10],
 		cmd_afk[5],
 		cmd_keypress[20],
+		cmd_user_menu_wait_time_ms[30],
 		cmd_open_url[20],
 		cmd_show_spell[20],
 		cmd_cast_spell[20],
@@ -467,6 +468,7 @@ extern char
 		cm_minimap_menu_str[60],
 		cm_user_menu_str[150],
 		cm_stats_bar_base_str[30],
+		cm_recipe_menu_str[100],
 		/* user_menus.cpp */
 		um_invalid_command_str[50],
 		um_invalid_line_str[50],

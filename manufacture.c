@@ -4,7 +4,9 @@
 #include <ctype.h>
 #include "manufacture.h"
 #include "asc.h"
+#include "context_menu.h"
 #include "cursors.h"
+#include "elconfig.h"
 #include "elwindows.h"
 #include "gamewin.h"
 #include "hud.h"
@@ -20,24 +22,20 @@
 #include "gl_init.h"
 #endif
 
-/*
- * TO DO: pjbroad/bluap Jan 2012
- * recipe window - context menu?
- * 	- add sort by name option
- * 	- remove unused slots - shuffle up
- *  - one more slot 
-*/
-
 #define NUM_MIX_SLOTS 6
 #define MIX_SLOT_OFFSET 36
 #define SLOT_SIZE 33
 
 int wanted_num_recipe_entries = 10;
+const int max_num_recipe_entries = 500;
 item manufacture_list[ITEM_NUM_ITEMS];
 int manufacture_win= -1;
 int recipe_win= -1;
+size_t cm_recipewin = CM_INIT_VALUE;
 int manufacture_menu_x=10;
 int manufacture_menu_y=20;
+
+enum { CMRIC_ADD=0, CMRIC_CLEAR, CMRIC_SORT };
 
 typedef struct
 {
@@ -275,8 +273,10 @@ void check_for_recipe_name(const char *name)
 /* callback for options window to change the number of recipe entries */
 void change_num_recipe_entries(int * var, int value)
 {
-	if(value >= 0)
+	if ((value >= 0) && (value < max_num_recipe_entries))
 		*var = value;
+	else
+		return;
 	if (!recipes_loaded)
 		return;
 
@@ -301,9 +301,9 @@ void change_num_recipe_entries(int * var, int value)
 		resize_window(recipe_win, recipe_win_width, num_displayed_recipes*SLOT_SIZE);
 	}
 
-	/* play safe and simple and reset the scroll position as well as the length */
-	vscrollbar_set_pos(recipe_win, recipe_win_scroll_id, 0);
+	/* reset the scroll length and position to show the new slot */
 	vscrollbar_set_bar_len(recipe_win, recipe_win_scroll_id, num_recipe_entries - num_displayed_recipes);
+	vscrollbar_set_pos(recipe_win, recipe_win_scroll_id, num_recipe_entries - num_displayed_recipes);
 }
 
 
@@ -403,7 +403,7 @@ void save_recipes(){
 
 
 /* examine the specified recipe and the items available then set the recipe status true if can make */
-void check_if_possible_recipe(recipe_entry *this_recipe)
+static void check_if_possible_recipe(recipe_entry *this_recipe)
 {
 	int i;
 	int possible = 1;
@@ -476,7 +476,7 @@ void build_manufacture_list()
 
 
 /* general copy recipe from pipeline function */
-void copy_recipe_from_manu_list(item *this_item_store)
+static void copy_recipe_from_manu_list(item *this_item_store)
 {
 	size_t i;
 	for(i=MIX_SLOT_OFFSET; i<MIX_SLOT_OFFSET+NUM_MIX_SLOTS; i++)
@@ -491,7 +491,7 @@ static void use_recipe(int recipe_to_use)
 
 //DRAWING FUNCTIONS
 
-void draw_recipe_controls(){
+static void draw_recipe_controls(){
 	int wpx=SLOT_SIZE*NUM_MIX_SLOTS+2;
 	int wpy=manufacture_menu_y_len-37;
 	int lpx=18;
@@ -521,7 +521,7 @@ void draw_recipe_controls(){
 }
 
 //draws a NUM_MIX_SLOTSx1 grid of items+grid
-int draw_production_pipe(int x, int y, int recipe_num){
+static int draw_production_pipe(int x, int y, int recipe_num){
 	int i,ofs,valid;
 	Uint8 str[80];
 	item *the_list;
@@ -567,7 +567,7 @@ int draw_production_pipe(int x, int y, int recipe_num){
 	return 1;
 }
 
-int	display_manufacture_handler(window_info *win)
+static int	display_manufacture_handler(window_info *win)
 {
 	Uint8 str[80];
 	int i;
@@ -630,9 +630,26 @@ CHECK_GL_ERRORS();
 	return 1;
 }
 
+static void clear_recipe_filter(void)
+{
+	recipe_name_filter[0] = '\0';
+	last_recipe_key_time = 0;
+}
+
+static void toggle_recipe_window(void)
+{
+	recipes_shown=!recipes_shown;
+	if (recipes_shown)
+		show_window(recipe_win);
+	else
+	{
+		hide_window(recipe_win);
+		clear_recipe_filter();
+	}
+}
 
 /* draw the recipes - finishing any resize to snap to a reasonable size */
-int recipe_dropdown_draw(window_info *win){
+static int recipe_dropdown_draw(window_info *win){
 	static int resizing = 0;
 	size_t i;
 	int first_displayed_recipe = vscrollbar_get_pos (win->window_id, recipe_win_scroll_id);
@@ -669,10 +686,7 @@ int recipe_dropdown_draw(window_info *win){
 	if (strlen(recipe_name_filter))
 	{
 		if (SDL_GetTicks() > (last_recipe_key_time+5000))
-		{
-			recipe_name_filter[0] = '\0';
-			last_recipe_key_time = 0;
-		}
+			clear_recipe_filter();
 		else
 		{
 			static char tmp[30];
@@ -692,6 +706,7 @@ int recipe_dropdown_draw(window_info *win){
 			show_help(recipes_store[actual_recipe].name, win->len_x+5, SLOT_SIZE*mouse_over_recipe+(SLOT_SIZE-SMALL_FONT_Y_LEN)/2);
 		if (show_help_text)
 		{
+			show_help(cm_help_options_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 			show_help(recipe_select_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 			show_help(recipe_load_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 			show_help(find_active?recipe_during_find_str:recipe_find_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
@@ -727,8 +742,7 @@ static int keypress_recipe_handler(window_info *win, int mx, int my, Uint32 key,
 		return 0;
 	if (keychar == SDLK_ESCAPE)
 	{
-		recipe_name_filter[0] = '\0';
-		last_recipe_key_time = 0;
+		clear_recipe_filter();
 		return 1;
 	}
 	if (string_input(recipe_name_filter, sizeof(recipe_name_filter), keychar) || (keychar == SDLK_RETURN))
@@ -764,8 +778,23 @@ static int keypress_recipe_handler(window_info *win, int mx, int my, Uint32 key,
 }
 
 
+/* keypress in main window is passed to recipe window search */
+static int keypress_manufacture_handler(window_info *win, int mx, int my, Uint32 key, Uint32 unikey)
+{
+	if ((recipe_win > -1) && (recipe_win < windows_list.num_windows))
+	{
+		window_info *win_recp = &windows_list.window[recipe_win];
+		if (!recipes_shown)
+			toggle_recipe_window();
+		if (win_recp != NULL)
+			return keypress_recipe_handler(win_recp, mx, my, key, unikey);
+	}
+	return 0;
+}
+
+
 //CLICK HANDLERS
-int recipe_dropdown_click_handler(window_info *win, int mx, int my, Uint32 flags){
+static int recipe_dropdown_click_handler(window_info *win, int mx, int my, Uint32 flags){
 
 	static int last_clicked=0;
 	static int last_recipe=0;
@@ -802,7 +831,7 @@ int recipe_dropdown_click_handler(window_info *win, int mx, int my, Uint32 flags
 	return 1;
 }
 
-int recipe_controls_click_handler(int mx, int my, Uint32 flags){
+static int recipe_controls_click_handler(int mx, int my, Uint32 flags){
 
 	int wpx=SLOT_SIZE*NUM_MIX_SLOTS+2;
 	int wpy=manufacture_menu_y_len-37;
@@ -820,12 +849,10 @@ int recipe_controls_click_handler(int mx, int my, Uint32 flags){
 			use_recipe(cur_recipe);
 		} else {
 			//normal click
-			recipes_shown=!recipes_shown;
+			toggle_recipe_window();
 		}
 
 		build_manufacture_list();
-		if (recipes_shown) show_window(recipe_win);
-		else hide_window(recipe_win);
 		do_click_sound();
 	} else
 	if (mx>wpx+3&&mx<wpx+lpx-3&&my>wpy&&my<wpy+15){
@@ -840,7 +867,7 @@ int recipe_controls_click_handler(int mx, int my, Uint32 flags){
 	return 0;
 }
 
-int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
+static int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 {
 	int pos;
 	static int last_slot=-1;
@@ -885,6 +912,7 @@ int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 					manufacture_list[j].image_id=manufacture_list[pos].image_id;
 					manufacture_list[pos].quantity -= quantitytomove;
 					copy_recipe_from_manu_list(manu_recipe.items);
+					do_click_sound();
 					return 1;
 				}
 
@@ -900,6 +928,7 @@ int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 					manufacture_list[j].image_id=manufacture_list[pos].image_id;
 					manufacture_list[pos].quantity -= quantitytomove;
 					copy_recipe_from_manu_list(manu_recipe.items);
+					do_click_sound();
 					return 1;
 				}
 		}
@@ -935,6 +964,7 @@ int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 					manufacture_list[j].image_id=manufacture_list[MIX_SLOT_OFFSET+pos].image_id;
 					manufacture_list[MIX_SLOT_OFFSET+pos].quantity -= quantitytomove;
 					copy_recipe_from_manu_list(manu_recipe.items);
+					do_click_sound();
 					return 1;
 				}
 
@@ -951,6 +981,7 @@ int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 					manufacture_list[j].image_id=manufacture_list[MIX_SLOT_OFFSET+pos].image_id;
 					manufacture_list[MIX_SLOT_OFFSET+pos].quantity -= quantitytomove;
 					copy_recipe_from_manu_list(manu_recipe.items);
+					do_click_sound();
 					return 1;
 				}
 		}
@@ -958,12 +989,18 @@ int click_manufacture_handler(window_info *win, int mx, int my, Uint32 flags)
 	if (pos>=0) {
 		//click on an empty slot
 		//handle the mouse wheel
-		if (pos!=last_slot && ((flags&ELW_WHEEL_UP)||(flags&ELW_WHEEL_DOWN))) {
-			//simulate a click on the dropdown
-			last_slot=-1;
-			recipe_dropdown_click_handler(win,0,0,flags);
-			use_recipe(cur_recipe);
-			build_manufacture_list();
+		if (pos!=last_slot)
+		{
+			if ((flags&ELW_WHEEL_UP)||(flags&ELW_WHEEL_DOWN)) {
+				//simulate a click on the dropdown
+				last_slot=-1;
+				recipe_dropdown_click_handler(win,0,0,flags);
+				use_recipe(cur_recipe);
+				build_manufacture_list();
+			} else {
+				toggle_recipe_window();
+			}
+			do_click_sound();
 			return 0;
 		}
 	} else last_slot=-1;
@@ -1025,7 +1062,7 @@ int mix_handler(Uint8 quantity, const char* empty_error_str)
 	return 1;
 }
 
-int clear_handler()
+static int clear_handler()
 {
 	int i;
 
@@ -1035,7 +1072,7 @@ int clear_handler()
 }
 
 /* ">" button clicked - manufacture just one item */
-int mixone_handler()
+static int mixone_handler()
 {
   return mix_handler(1, mix_empty_str);
 }
@@ -1048,64 +1085,70 @@ int mixall_handler()
 
 
 /* show help for recipe window */
-int mouseover_recipe_handler(window_info *win, int mx, int my)
+static int mouseover_recipe_handler(window_info *win, int mx, int my)
 {
 	mouse_over_recipe = my/(SLOT_SIZE+1);
 	return 0;
 }
 
 //MOUSEOVER HANDLERS
-int recipe_controls_mouseover_handler(int mx, int my){
-
+static int recipe_controls_mouseover_handler(window_info *win, int mx, int my, int *help_line)
+{
 	int wpx=SLOT_SIZE*NUM_MIX_SLOTS+2;
-	int wpy=manufacture_menu_y_len-37;
+	int wpy=win->len_y-37;
 	int lpx=18;
 	int lpy=SLOT_SIZE;
 
-	if (!show_help_text)
-		return 0;
-
 	if (mx>wpx&&mx<wpx+lpx&&my>wpy+lpy-10&&my<wpy+lpy){
 		//on arrow
-		show_help(recipe_show_hide_str, 0, manufacture_menu_y_len+10);
+		show_help(recipe_show_hide_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*(*help_line)++);
 	} else
 	if (mx>wpx+3&&mx<wpx+lpx-3&&my>wpy&&my<wpy+15){
 		//on + button
-		show_help(recipe_save_str, 0, manufacture_menu_y_len+10);
+		show_help(recipe_save_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*(*help_line)++);
 	}
 	return 0;
 }
 
 /* mouse over slots - show tool tips */
-int mouseover_manufacture_slot_handler(window_info *win, int mx, int my)
+static int mouseover_manufacture_slot_handler(window_info *win, int mx, int my)
 {
 	int pos;
 	int check_for_eye = 0;
+	int help_line = 0;
 
 	/* See if we're over a message - and offer clear help if so */
 	if (show_help_text && *inventory_item_string && (my > manufacture_menu_y_len-85) && my < (manufacture_menu_y_len-37)) {
-		show_help((disable_double_click)?click_clear_str :double_click_clear_str, 0, win->len_y+10);
+		show_help((disable_double_click)?click_clear_str :double_click_clear_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 	}
 
-	/* see if we clicked on any item in the main category */
+	/* see if we're over an item in the main category */
 	pos=get_mouse_pos_in_grid(mx, my, 12, 3, 0, 0, SLOT_SIZE, SLOT_SIZE);
 	if (pos >= 0 && manufacture_list[pos].quantity > 0){
 		if (show_help_text)
-			show_help(manu_add_str, 0, manufacture_menu_y_len+10);
+			show_help(manu_add_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 		check_for_eye = 1;
 	}
 
-	/* see if we clicked on any item from the "production pipe" */
+	/* see if we're over an item from the "production pipe" */
 	pos=get_mouse_pos_in_grid(mx, my, NUM_MIX_SLOTS, 1, 5, manufacture_menu_y_len-37, SLOT_SIZE, SLOT_SIZE);
-	if (pos >= 0 && manufacture_list[MIX_SLOT_OFFSET+pos].quantity > 0){
-		if (show_help_text)
-			show_help(manu_remove_str, 0, manufacture_menu_y_len+10);
-		check_for_eye = 1;
+	if (pos >= 0) {
+		if (manufacture_list[MIX_SLOT_OFFSET+pos].quantity > 0){
+			if (show_help_text)
+				show_help(manu_remove_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
+			check_for_eye = 1;
+		}
+		else
+			show_help(recipe_show_hide_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 	}
 
 	/*check recipe controls*/
-	if (show_help_text)
-		recipe_controls_mouseover_handler(mx,my);
+	if (pos<0 && show_help_text)
+		recipe_controls_mouseover_handler(win, mx,my,&help_line);
+
+	// show the recipe search help
+	if (show_help_text && !recipes_shown)
+		show_help(recipe_find_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 
 	/* if we're over an occupied slot and the eye cursor function is active, show the eye cursor */
 	if (check_for_eye){
@@ -1119,7 +1162,7 @@ int mouseover_manufacture_slot_handler(window_info *win, int mx, int my)
 }
 
 /* mouse over ">" button - show tool tip */
-int mouseover_mixone_handler(window_info *win, int mx, int my)
+static int mouseover_mixone_handler(window_info *win, int mx, int my)
 {
 	if (show_help_text)
 		show_help(mix_str, SLOT_SIZE*NUM_MIX_SLOTS+25, manufacture_menu_y_len+10);
@@ -1127,7 +1170,7 @@ int mouseover_mixone_handler(window_info *win, int mx, int my)
 }
 
 /* mouse over ">>" button - show tool tip */
-int mouseover_mixall_handler(window_info *win, int mx, int my)
+static int mouseover_mixall_handler(window_info *win, int mx, int my)
 {
 	if (show_help_text)
 		show_help(mixall_str, SLOT_SIZE*8-5, manufacture_menu_y_len+10);
@@ -1142,6 +1185,81 @@ static int resize_recipe_handler(window_info *win, int width, int height)
 	num_displayed_recipes = (int)(win->len_y / SLOT_SIZE);
 	vscrollbar_set_bar_len(win->window_id, recipe_win_scroll_id, num_recipe_entries - num_displayed_recipes);
 	return 1;
+}
+
+// returns 1 is the recipe has no items, otherwise returns 0
+static int recipe_is_empty(const recipe_entry *recipe)
+{
+	size_t i;
+	for(i=0; i<NUM_MIX_SLOTS; i++)
+		if (recipe->items[i].quantity > 0)
+			return 0;
+	return 1;
+}
+
+// compare to recipes by name, or if both un-named, by oif they are empty
+static int recipe_cmp(const void *a, const void *b)
+{
+	const recipe_entry *left = (const recipe_entry *)a;
+	const recipe_entry *right = (const recipe_entry *)b;
+	if ((left->name == NULL) && (right->name == NULL))
+	{
+		if (recipe_is_empty(left) && recipe_is_empty(right))
+			return 0;
+		else if (recipe_is_empty(left))
+			return 1;
+		else
+			return -1;
+	}
+	else if (left->name == NULL)
+		return 1;
+	else if (right->name == NULL)
+		return -1;
+	return strcmp(left->name, right->name);
+}
+
+// execute options from the recipe context menu
+static int context_recipe_handler(window_info *win, int widget_id, int mx, int my, int option)
+{
+	switch (option)
+	{
+		case CMRIC_ADD:
+		{
+			// add additional row and select it
+			if (wanted_num_recipe_entries < max_num_recipe_entries-1)
+			{
+				change_num_recipe_entries(&wanted_num_recipe_entries, wanted_num_recipe_entries+1);
+				set_var_OPT_INT("wanted_num_recipe_entries", wanted_num_recipe_entries);
+				cur_recipe = num_recipe_entries -1;
+			}
+			break;
+		}
+		case CMRIC_CLEAR:
+		{
+			// clear the current recipe
+			size_t i;
+			for(i=0; i<NUM_MIX_SLOTS; i++)
+				recipes_store[cur_recipe].items[i].quantity = 0;
+			clear_recipe_name(cur_recipe);
+			break;
+		}
+		case CMRIC_SORT:
+		{
+			qsort(recipes_store, num_recipe_entries, sizeof(recipe_entry), recipe_cmp);
+			break;
+		}
+		default:
+			return 0;
+	}
+	return 1;
+}
+
+// selectively grey recipe context options
+static void context_recipe_pre_show_handler(window_info *win, int widget_id, int mx, int my, window_info *cm_win)
+{
+	int first_shown = vscrollbar_get_pos (win->window_id, recipe_win_scroll_id);
+	cm_grey_line(cm_recipewin, CMRIC_ADD, (wanted_num_recipe_entries >= max_num_recipe_entries));
+	cm_grey_line(cm_recipewin, CMRIC_CLEAR, (cur_recipe < first_shown) || (cur_recipe >= first_shown + num_displayed_recipes));
 }
 
 void display_manufacture_menu()
@@ -1160,6 +1278,7 @@ void display_manufacture_menu()
 		set_window_handler(manufacture_win, ELW_HANDLER_DISPLAY, &display_manufacture_handler );
 		set_window_handler(manufacture_win, ELW_HANDLER_CLICK, &click_manufacture_handler );
 		set_window_handler(manufacture_win, ELW_HANDLER_MOUSEOVER, &mouseover_manufacture_slot_handler );
+		set_window_handler(manufacture_win, ELW_HANDLER_KEYPRESS, &keypress_manufacture_handler );
 
 		mixone_button_id=button_add_extended(manufacture_win, mixone_button_id,
 			NULL, SLOT_SIZE*NUM_MIX_SLOTS+15+10, manufacture_menu_y_len-36, 43, 0, 0, 1.0f, 0.77f, 0.57f, 0.39f, ">");
@@ -1185,6 +1304,12 @@ void display_manufacture_menu()
 		recipe_win_scroll_id = vscrollbar_add_extended(recipe_win, 1, NULL, recipe_win_width-ELW_BOX_SIZE, 0, ELW_BOX_SIZE,
 			num_displayed_recipes*SLOT_SIZE - ELW_BOX_SIZE, 0, 1.0, 0.77f, 0.57f, 0.39f, 0, 1, num_recipe_entries-num_displayed_recipes);
 		set_window_min_size(recipe_win, recipe_win_width, 4*SLOT_SIZE);
+
+		// context menu
+		cm_recipewin = cm_create(cm_recipe_menu_str, context_recipe_handler);
+		cm_add_window(cm_recipewin, recipe_win);
+		cm_set_pre_show_handler(cm_recipewin, context_recipe_pre_show_handler);
+
 		hide_window(recipe_win); //start hidden
 		build_manufacture_list();
 	} else {

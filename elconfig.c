@@ -121,7 +121,38 @@ typedef	int (*int_min_max_func)();
 
 typedef char input_line[256];
 
-struct variables our_vars= {0,{NULL}};
+/*!
+ * var_struct stores the data for a single configuration entry.
+ */
+typedef struct
+{
+	option_type type; /*!< type of the variable */
+	char	*name; /*!< name of the variable */
+	int 	nlen; /*!< length of the \a name */
+	char 	*shortname; /*!< shortname of the variable */
+	int 	snlen; /*!< length of the \a shortname */
+	void 	(*func)(); /*!< routine to execute when this variable is selected. */
+	void 	*var; /*!< data for this variable */
+	int 	len; /*!< length of the variable */
+	int	saved;
+//	char 	*message; /*!< In case you want a message to be written when a setting is changed */
+	dichar display;
+	struct {
+		int tab_id; /*!< The tab ID in which we find this option */
+		int label_id; /*!< The label ID associated with this option */
+		int widget_id; /*!< Widget ID for things like checkboxes */
+	} widgets;
+	queue_t *queue; /*!< Queue that holds info for certain widget types. */
+} var_struct;
+
+/*!
+ * a list of variables of type \see var_struct
+ */
+struct variables
+{
+	int no; /*!< current number of allocated \see var_struct in \a var */
+	var_struct * var[200]; /*!< fixed array of \a no \see var_struct structures */
+} our_vars= {0,{NULL}};
 
 int write_ini_on_exit= 1;
 // Window Handling
@@ -1774,9 +1805,9 @@ static void init_ELC_vars(void)
 	add_var(OPT_BOOL,"opaque_window_backgrounds", "opaquewin", &opaque_window_backgrounds, change_var, 0,"Use Opaque Window Backgrounds","Toggle the current state of all windows between transparent and opaque background. Use CTRL+D to toggle the current state of an individual window.",HUD);
 	add_var(OPT_SPECINT, "buff_icon_size","bufficonsize", &buff_icon_size, set_buff_icon_size, 32, "Buff Icon Size","The size of the icons of the active buffs.  Icons are not displayed when size set to zero.",HUD,0,48);
 	add_var(OPT_BOOL,"relocate_quickbar", "requick", &quickbar_relocatable, change_quickbar_relocatable, 0,"Relocate Quickbar","Set whether you can move the quickbar",HUD);
-	add_var(OPT_INT,"num_quickbar_slots","numqbslots",&num_quickbar_slots,change_int,6,"Number Of Quickbar Slots","Set the number of quickbar slots displayed. May be automatically reduced for low resolutions",HUD,1,MAX_QUICKBAR_SLOTS);
+	add_var(OPT_INT,"num_quickbar_slots","numqbslots",&num_quickbar_slots,change_int,6,"Number Of Quickbar Slots","Set the number of quickbar slots (both inventory & spells) displayed. May be automatically reduced for low resolutions",HUD,1,MAX_QUICKBAR_SLOTS);
 	add_var(OPT_INT,"max_food_level","maxfoodlevel",&max_food_level,change_int,45,"Maximum Food Level", "Set the maximum value displayed by the food level bar.",HUD,10,200);
-	add_var(OPT_INT,"wanted_num_recipe_entries","wantednumrecipeentries",&wanted_num_recipe_entries,change_num_recipe_entries,10,"Number of receipe entries", "Sets the number of entries available for the manufacturing window stored recipes.",HUD,4,100);
+	add_var(OPT_INT,"wanted_num_recipe_entries","wantednumrecipeentries",&wanted_num_recipe_entries,change_num_recipe_entries,10,"Number of receipe entries", "Sets the number of entries available for the manufacturing window stored recipes.",HUD,4,max_num_recipe_entries);
 	add_var(OPT_BOOL,"3d_map_markers","3dmarks",&marks_3d,change_3d_marks,1,"Enable 3D Map Markers","Shows user map markers in the game window",HUD);
 	add_var(OPT_BOOL,"item_window_on_drop","itemdrop",&item_window_on_drop,change_var,1,"Item Window On Drop","Toggle whether the item window shows when you drop items",HUD);
 	add_var(OPT_FLOAT,"minimap_scale", "minimapscale", &minimap_size_coefficient, change_minimap_scale, 0.7, "Minimap Scale", "Adjust the overall size of the minimap", HUD, 0.5, 1.5, 0.1);
@@ -1814,6 +1845,7 @@ static void init_ELC_vars(void)
 	add_var(OPT_BOOL,"mod_chat_separate", "modsep", &mod_chat_separate, change_separate_flag, 0, "Separate Moderator Chat", "Should moderator chat be separated from the rest?", CHAT);
 	add_var(OPT_BOOL,"highlight_tab_on_nick", "highlight", &highlight_tab_on_nick, change_var, 1, "Highlight Tabs On Name", "Should tabs be highlighted when someone mentions your name?", CHAT);
 	add_var(OPT_BOOL,"emote_filter", "emote_filter", &emote_filter, change_var, 1, "Emotes filter", "Do not display lines of text in local chat containing emotes only", CHAT);
+	add_var(OPT_BOOL,"summoning_filter", "summ_filter", &summoning_filter, change_var, 0, "Summoning filter", "Do not display lines of text in local chat containing summoning messages", CHAT);
 	add_var(OPT_INT,"time_warning_hour","warn_h",&time_warn_h,change_int,-1,"Time warning for new hour","If set to -1, there will be no warning given. Otherwise, you will get a notification in console this many minutes before the new hour",CHAT, -1, 30);
 	add_var(OPT_INT,"time_warning_sun","warn_s",&time_warn_s,change_int,-1,"Time warning for dawn/dusk","If set to -1, there will be no warning given. Otherwise, you will get a notification in console this many minutes before sunrise/sunset",CHAT, -1, 30);
 	add_var(OPT_INT,"time_warning_day","warn_d",&time_warn_d,change_int,-1,"Time warning for new #day","If set to -1, there will be no warning given. Otherwise, you will get a notification in console this many minutes before the new day",CHAT, -1, 30);

@@ -320,6 +320,7 @@ char
 	cm_item_list_selected_str[40],
 	cm_item_list_names_str[100],
 	cm_stats_bar_base_str[30],
+	cm_recipe_menu_str[100],
 	/* user_menus.cpp */
 	um_invalid_command_str[50],
 	um_invalid_line_str[50],
@@ -428,6 +429,7 @@ char	name_too_long[75],
 	cmd_msg[10],
 	cmd_afk[5],
 	cmd_keypress[20],
+	cmd_user_menu_wait_time_ms[30],
 	cmd_open_url[20],
 	cmd_show_spell[20],
 	cmd_cast_spell[20];
@@ -1000,6 +1002,7 @@ void init_console()
 	add_xml_identifier(cmd_grp,"knowledge_short",cmd_knowledge_short,"know",sizeof(cmd_knowledge_short));
 	add_xml_identifier(cmd_grp,"open_url",cmd_open_url,"open_url",sizeof(cmd_open_url));
 	add_xml_identifier(cmd_grp,"keypress",cmd_keypress,"keypress",sizeof(cmd_keypress));
+	add_xml_identifier(cmd_grp,"user_menu_wait_time_ms",cmd_user_menu_wait_time_ms,"user_menu_wait_time_ms",sizeof(cmd_user_menu_wait_time_ms));
 	add_xml_identifier(cmd_grp,"show_spell",cmd_show_spell,"show_spell",sizeof(cmd_show_spell));
 	add_xml_identifier(cmd_grp,"cast_spell",cmd_cast_spell,"cast_spell",sizeof(cmd_cast_spell));
 }
@@ -1284,7 +1287,7 @@ void init_help()
 	add_xml_identifier(misc,"mix_empty_str",mix_empty_str,"Nothing to mix, add some items.",sizeof(mix_empty_str));
 	add_xml_identifier(misc,"click_clear",click_clear_str,"Click to clear message.",sizeof(click_clear_str));
 	add_xml_identifier(misc,"double_click_clear",double_click_clear_str,"Double-click to clear message.",sizeof(double_click_clear_str));
-	add_xml_identifier(misc,"recipe_select",recipe_select_str,"Click or scroll to select recipe slot.",sizeof(recipe_select_str));
+	add_xml_identifier(misc,"recipe_select",recipe_select_str,"Left-click or scroll to select recipe slot.",sizeof(recipe_select_str));
 	add_xml_identifier(misc,"recipe_load",recipe_load_str,"Double-click to load recipe.",sizeof(recipe_load_str));
 	add_xml_identifier(misc,"recipe_find",recipe_find_str,"Type text - find recipe.",sizeof(recipe_find_str));
 	add_xml_identifier(misc,"recipe_during_find",recipe_during_find_str,"Next match - return, +ctrl to load.",sizeof(recipe_during_find_str));
@@ -1449,7 +1452,7 @@ void init_help()
 	add_xml_identifier(misc, "cm_dialog_menu", cm_dialog_menu_str, "--\nEnable Keypresses\nKeypresses Anywhere", sizeof(cm_dialog_menu_str));
 	add_xml_identifier(misc, "cm_url_menu", cm_url_menu_str, "Open\nFind In Console\nMark Visited\nMark Unvisited\n--\nDelete\n--\nDelete All", sizeof(cm_url_menu_str));	
 	add_xml_identifier(misc, "cm_counters_menu", cm_counters_menu_str, "Delete entry\n--\nReset Session Total\n--\nEnable floating messages", sizeof(cm_counters_menu_str));	
-	add_xml_identifier(misc, "cm_help_options", cm_help_options_str, "Right-click for options", sizeof(cm_help_options_str));
+	add_xml_identifier(misc, "cm_help_options", cm_help_options_str, "Right-click for options.", sizeof(cm_help_options_str));
 	add_xml_identifier(misc, "cm_npcname_menu", cm_npcname_menu_str, "Copy NPC Name", sizeof(cm_npcname_menu_str));
 	add_xml_identifier(misc, "cm_dialog_copy_menu", cm_dialog_copy_menu_str, "Exclude Responses\nRemove newlines", sizeof(cm_dialog_copy_menu_str));
 	add_xml_identifier(misc, "cm_minimap_menu", cm_minimap_menu_str, "--\nRotate Minimap\nPin Minimap\nOpen On Start", sizeof(cm_minimap_menu_str));
@@ -1457,6 +1460,7 @@ void init_help()
 	add_xml_identifier(misc, "cm_item_list_selected", cm_item_list_selected_str, "Edit quantity\n--\nDelete", sizeof(cm_item_list_selected_str));
 	add_xml_identifier(misc, "cm_item_list_names", cm_item_list_names_str, "Create new list\nRename active list\n--\nDelete active list\n--\nReload from file", sizeof(cm_item_list_names_str));
 	add_xml_identifier(misc, "cm_stats_bar_base", cm_stats_bar_base_str, "--\nAdd Bar\nRemove Bar", sizeof(cm_stats_bar_base_str));
+	add_xml_identifier(misc, "cm_recipe_menu", cm_recipe_menu_str, "Add additional recipe row\nClear selected recipe\nSort recipes by name", sizeof(cm_recipe_menu_str));
 	
 	/* user_menus.cpp */
 	add_xml_identifier(misc, "um_invalid_command", um_invalid_command_str, "Invalid command text", sizeof(um_invalid_command_str));
