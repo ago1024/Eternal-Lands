@@ -84,19 +84,60 @@ void check_book_known()
 	}
 }
 
+int is_researching(void)
+{
+	if (your_info.researching < sizeof(knowledge_list))
+		return 1;
+	else
+		return 0;
+}
+
+float get_research_fraction(void)
+{
+	float progress = 0;
+	if (your_info.research_total > 0)
+		progress = (float)your_info.research_completed / (float)your_info.research_total;
+	if (progress > 1)
+		progress = 1;
+	return progress;
+}
+
+static float research_rate = -1;
+
+void update_research_rate(void)
+{
+	static int last_research_completed = -1;
+	if (last_research_completed > 0)
+	{
+		if ((your_info.research_completed - last_research_completed) > 0)
+		{
+			research_rate = 1.0 / (float)(your_info.research_completed - last_research_completed);
+			last_research_completed = your_info.research_completed;
+		}
+	}
+	else
+	{
+		last_research_completed = your_info.research_completed;
+		research_rate = 2.0 / (float)(your_info.wil.cur + your_info.rea.cur);
+	}
+}
+
+int get_research_eta(void)
+{
+	if (research_rate < 0)
+		return 0;
+	return (int)(research_rate * (your_info.research_total - your_info.research_completed) + 0.5);
+}
+
 int display_knowledge_handler(window_info *win)
 {
 	int i,x=2,y=2;
-	int progress = (125*your_info.research_completed+1)/(your_info.research_total+1);
-	int eta = (your_info.research_total-your_info.research_completed)/((your_info.wil.cur+your_info.rea.cur)/2);
 	int scroll = vscrollbar_get_pos (knowledge_win, knowledge_scroll_id);
 	char points_string[16];
-	char eta_string[20];
 	char *research_string;
 	int rx = win->len_x - 15;
 	int lx = win->len_x - 15 - (455-330);
 	int points_pos;
-	int eta_pos;
 	float font_ratio = 0.7;
 	float max_name_x = (win->len_x-4)/2;
 	int is_researching = 1;
@@ -118,7 +159,6 @@ int display_knowledge_handler(window_info *win)
 	{
 		research_string = not_researching_anything;
 		points_string[0] = '\0';
-		progress = 1;
 		is_researching = 0;
 	}
 	points_pos = (rx - lx - strlen(points_string)*8) / 2;
@@ -144,6 +184,7 @@ int display_knowledge_handler(window_info *win)
 	//progress bar
 	if (is_researching)
 	{
+		int progress = 125*get_research_fraction();
 		glBegin(GL_QUADS);
 		glColor3f(0.40f,0.40f,1.00f);
 		glVertex3i(lx+1+gx_adjust,315+gy_adjust,0);
@@ -163,7 +204,10 @@ int display_knowledge_handler(window_info *win)
 	draw_string_small(lx+points_pos,320,(unsigned char*)points_string,1);
 	if (is_researching && mouse_over_progress_bar)
 	{
-		safe_snprintf(eta_string, sizeof(eta_string), "ETA: %i minutes", eta);
+		char eta_string[20];
+		int eta = get_research_eta();
+		int eta_pos;
+		safe_snprintf(eta_string, sizeof(eta_string), "ETA: %i %s", eta, (eta==1)?minute_str:minutes_str);
 		eta_pos = (int)(rx - lx - strlen(eta_string)*8) / 2;
 		draw_string_small(lx+eta_pos,285,(unsigned char*)eta_string,1);
 		mouse_over_progress_bar=0;

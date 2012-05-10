@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <string.h>
 #include <ctype.h>
+#include <sys/types.h>
 #include "manufacture.h"
 #include "asc.h"
 #include "context_menu.h"
@@ -27,6 +28,7 @@
 #define SLOT_SIZE 33
 
 int wanted_num_recipe_entries = 10;
+int disable_manuwin_keypress = 0;
 const int max_num_recipe_entries = 500;
 item manufacture_list[ITEM_NUM_ITEMS];
 int manufacture_win= -1;
@@ -157,6 +159,11 @@ static void load_recipe_names(void)
 
 	safe_snprintf(fname, sizeof(fname), "recipes_%s.names",username_str);
 	my_tolower(fname);
+
+	/* sliently ignore non existing file */
+	if (!file_exists_config(fname))
+		return;
+
 	fp = open_file_config(fname,"r");
 	if(fp == NULL)
 	{
@@ -313,6 +320,8 @@ void load_recipes (){
 	FILE *fp;
 	size_t i;
 	int logged = 0;
+	off_t file_size;
+	const size_t recipe_size = sizeof(item)*NUM_MIX_SLOTS;
 
 	if (recipes_loaded) {
 		/*
@@ -322,6 +331,21 @@ void load_recipes (){
 		save_recipes();
 		save_recipe_names();
 		return;
+	}
+
+	safe_snprintf(fname, sizeof(fname), "recipes_%s.dat",username_str);
+	my_tolower(fname);
+
+	/* get file length, if a valid length adjust the number of recipe slots if required */
+	file_size = get_file_size_config(fname);
+	if ((file_size > 0) && (file_size % recipe_size == 0))
+	{
+		int num_recipes_in_file = file_size / recipe_size - 1; // -1 as last is current in pipline
+		if ((num_recipes_in_file > wanted_num_recipe_entries) && (num_recipes_in_file < max_num_recipe_entries))
+		{
+			wanted_num_recipe_entries = num_recipes_in_file;
+			set_var_OPT_INT("wanted_num_recipe_entries", wanted_num_recipe_entries);
+		}
 	}
 
 	/* allocate and initialise the recipe store */
@@ -335,8 +359,17 @@ void load_recipes (){
 	recipes_loaded=1;
 	init_recipe_names();
 
-	safe_snprintf(fname, sizeof(fname), "recipes_%s.dat",username_str);
-	my_tolower(fname);
+	/* if the file exists but is not a valid size, don't use it */
+	if ((file_size > 0) && (file_size % recipe_size != 0))
+	{
+		LOG_ERROR("%s: Invalid format (size mismatch) \"%s\"\n", reg_error_str, fname);
+		return;
+	}
+
+	/* sliently ignore non existing file */
+	if (!file_exists_config(fname))
+		return;
+
 	fp = open_file_config(fname,"rb");
 	if(fp == NULL){
 		LOG_ERROR("%s: %s \"%s\": %s\n", reg_error_str, cant_open_file, fname, strerror(errno));
@@ -346,22 +379,22 @@ void load_recipes (){
 	/* attempt to read all the recipies we're expecting */
 	for (i=0; !feof(fp) && i<num_recipe_entries; i++)
 	{
-		if (fread (recipes_store[i].items,sizeof(item)*NUM_MIX_SLOTS,1, fp) != 1)
+		if (fread (recipes_store[i].items,recipe_size,1, fp) != 1)
 		{
 			if (!logged)
 			{
 				LOG_ERROR("%s() fail during read of file [%s] : %s\n", __FUNCTION__, fname, strerror(errno));
 				logged = 1;
 			}
-			memset(recipes_store[i].items, 0, sizeof(item)*NUM_MIX_SLOTS);
+			memset(recipes_store[i].items, 0, recipe_size);
 			break;
 		}
 	}
 
 	/* if there is another, use it as the current recipe in the manufacturing pipeline */
 	if (!feof(fp))
-		if (fread (manu_recipe.items,sizeof(item)*NUM_MIX_SLOTS,1, fp) != 1)
-			memset(manu_recipe.items, 0, sizeof(item)*NUM_MIX_SLOTS);
+		if (fread (manu_recipe.items,recipe_size,1, fp) != 1)
+			memset(manu_recipe.items, 0, recipe_size);
 
 	fclose (fp);
 
@@ -724,6 +757,7 @@ static void select_recipe(int the_recipe)
 	cur_recipe = the_recipe;
 	use_recipe(cur_recipe);
 	recipes_shown=0;
+	clear_recipe_filter();
 	hide_window(recipe_win);
 	build_manufacture_list();
 }
@@ -781,12 +815,13 @@ static int keypress_recipe_handler(window_info *win, int mx, int my, Uint32 key,
 /* keypress in main window is passed to recipe window search */
 static int keypress_manufacture_handler(window_info *win, int mx, int my, Uint32 key, Uint32 unikey)
 {
-	if ((recipe_win > -1) && (recipe_win < windows_list.num_windows))
+	if (!disable_manuwin_keypress && (recipe_win > -1) && (recipe_win < windows_list.num_windows))
 	{
 		window_info *win_recp = &windows_list.window[recipe_win];
+		int current_recipes_shown = recipes_shown; // so we don't undo keypress_recipe_handler() work
 		if (win_recp != NULL && keypress_recipe_handler(win_recp, mx, my, key, unikey))
 		{
-			if (!recipes_shown)
+			if (!recipes_shown && (current_recipes_shown == recipes_shown))
 			    toggle_recipe_window();
 			return 1;
 		}
@@ -1149,7 +1184,7 @@ static int mouseover_manufacture_slot_handler(window_info *win, int mx, int my)
 		recipe_controls_mouseover_handler(win, mx,my,&help_line);
 
 	// show the recipe search help
-	if (show_help_text && !recipes_shown)
+	if (show_help_text && !recipes_shown && !disable_manuwin_keypress)
 		show_help(recipe_find_str, 0, win->len_y + 10 + SMALL_FONT_Y_LEN*help_line++);
 
 	/* if we're over an occupied slot and the eye cursor function is active, show the eye cursor */
@@ -1294,6 +1329,12 @@ void display_manufacture_menu()
 
 		clear_button_id=button_add_extended(manufacture_win, clear_button_id, NULL, SLOT_SIZE*9+18+10, manufacture_menu_y_len-36, 70, 0, 0, 1.0f, 0.77f, 0.57f, 0.39f, clear_str);
 		widget_set_OnClick(manufacture_win, clear_button_id, clear_handler);
+
+		if ((manufacture_win > -1) && (manufacture_win < windows_list.num_windows))
+		{
+			cm_add(windows_list.window[manufacture_win].cm_id, cm_manuwin_menu_str, NULL);
+			cm_bool_line(windows_list.window[manufacture_win].cm_id, ELW_CM_MENU_LEN+1, &disable_manuwin_keypress, NULL);
+		}
 
 		//Create a child window to show recipes in a dropdown panel
 		recipe_win= create_window("w_recipe", manufacture_win, 0, 2, manufacture_menu_y_len-2, recipe_win_width, num_displayed_recipes*SLOT_SIZE,

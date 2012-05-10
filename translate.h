@@ -348,6 +348,10 @@ extern char
 		completed_research[12],
 		researching_str[30],
 		not_researching_anything[25],
+		not_researching_str[25],
+		minutes_str[15],
+		minute_str[15],
+		idle_str[15],
 		knowledge_read_book[15],
 		knowledge_param_read[15],
 		knowledge_param_unread[15],
@@ -469,6 +473,7 @@ extern char
 		cm_user_menu_str[150],
 		cm_stats_bar_base_str[30],
 		cm_recipe_menu_str[100],
+		cm_manuwin_menu_str[50],
 		/* user_menus.cpp */
 		um_invalid_command_str[50],
 		um_invalid_line_str[50],
